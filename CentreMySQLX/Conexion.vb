@@ -7,6 +7,11 @@ Namespace Conexion
     Public NotInheritable Class Servicios
         Const Clase As String = "Servicios"
 
+        Public Enum TipoInstruccion
+            ExecuteScalar
+            NonQuery
+        End Enum
+
         Public Enum TipoFuncion
             Consulta = 1
             Instruccion = 2
@@ -163,6 +168,7 @@ Namespace Conexion
         End Function
 
         Public Function Instruccion(ByVal InstruccionMySQL As String,
+                                    Optional ByVal Tipo As TipoInstruccion = TipoInstruccion.ExecuteScalar,
                                     Optional ByVal CerrarConexion As Boolean = True) As String
             Const fn As String = "Instrucción"
             Const ty As TipoFuncion = TipoFuncion.Instruccion
@@ -180,7 +186,11 @@ Namespace Conexion
             Dim str As String
             Try
                 mysqlComando = New MySqlCommand(InstruccionMySQL, mysqlConnect)
-                str = CStr(mysqlComando.ExecuteScalar())
+                If Tipo = TipoInstruccion.NonQuery Then
+                    str = CStr(mysqlComando.ExecuteNonQuery())
+                Else
+                    str = CStr(mysqlComando.ExecuteScalar())
+                End If
 
             Catch ex As Exception
                 RegistroTransaccion(ty, InstruccionMySQL, TipoResultado.Incorrecto)
