@@ -168,7 +168,7 @@ Namespace Conexion
         End Function
 
         Public Function Instruccion(ByVal InstruccionMySQL As String,
-                                    Optional ByVal Tipo As TipoInstruccion = TipoInstruccion.ExecuteScalar,
+                                    Optional ByVal Tipo As TipoInstruccion = TipoInstruccion.NonQuery,
                                     Optional ByVal CerrarConexion As Boolean = True) As String
             Const fn As String = "Instrucción"
             Const ty As TipoFuncion = TipoFuncion.Instruccion
