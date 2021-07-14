@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CentreMySQLX", "CentreMySQLX\CentreMySQLX.vbproj", "{BBFEFB12-98B0-4211-A9FC-9F2036BB10E1}"
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CentreMySQLXEngine", "CentreMySQLX\CentreMySQLXEngine.vbproj", "{BBFEFB12-98B0-4211-A9FC-9F2036BB10E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D3222064-EB2D-4755-A0F9-895145181A48}
 	EndGlobalSection
 EndGlobal

@@ -50,6 +50,7 @@ Namespace Herramientas
 
     Public NotInheritable Class Conversiones
         Const Clase As String = "Conversiones"
+
         Public Shared Function Fecha(ByVal InputDB As Object) As Date
             Const fn As String = "Fecha_DBinput"
 
@@ -71,7 +72,9 @@ Namespace Herramientas
 
         End Function
 
-        Public Shared Function Fecha(ByVal InputValue As Date) As String
+        Public Shared Function Fecha(InputValue As Date,
+                                                      Optional SoloFecha As Boolean = False) As String
+
             Const fn As String = "Fecha_ProgramInput"
             If IsDBNull(InputValue) Then
                 Dim f As Date = New Date(1900, 1, 1)
@@ -79,7 +82,12 @@ Namespace Herramientas
             End If
 
             Try
-                Return Format(InputValue, "yyyy-MM-dd HH:mm:ss")
+                If SoloFecha = True Then
+                    Return Format(InputValue, "yyyy-MM-dd")
+                Else
+                    Return Format(InputValue, "yyyy-MM-dd HH:mm:ss")
+                End If
+
             Catch ex As Exception
                 Throw New ExcepcionInfo("Falla en conversión", Clase, fn, ex)
             End Try
