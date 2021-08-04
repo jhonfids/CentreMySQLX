@@ -4,6 +4,22 @@ Imports MySql.Data.MySqlClient
 
 Namespace Conexion
 
+    Module Resources
+
+        Public Function GetStringConnection(Data As DataConexion) As String
+            Dim ln As String = "SERVER=" & Data.IP & ";" &
+                                         "PORT=" & Data.Puerto & ";" &
+                                         "DATABASE=" & Data.NombreDatabase & ";" &
+                                         "USER=" & Data.Usuario & ";" &
+                                         "PASSWORD=" & Data.Contrasena & ""
+
+            Return ln
+        End Function
+
+
+    End Module
+
+
     Public NotInheritable Class Servicios
         Const Clase As String = "Servicios"
 
@@ -164,6 +180,80 @@ Namespace Conexion
             End If
 
             Return dt
+
+        End Function
+
+        Public Function InstruccionConTransaccion(InstruccionesSQL As List(Of String),
+                                                                        Optional Tipo As TipoInstruccion = TipoInstruccion.NonQuery,
+                                                                        Optional CerrarConexion As Boolean = True) As String()
+            Const fn As String = "InstrucciónWithTransaccion"
+            Const ty As TipoFuncion = TipoFuncion.Instruccion
+
+            'Este nuevo metodo usa bloque transcaccion con commit and rollback
+            Using connection As New MySqlConnection(GetStringConnection(_dataconexion))
+                connection.Open()
+
+                Dim command As MySqlCommand = connection.CreateCommand()
+
+                Dim transaction As MySqlTransaction
+                transaction = connection.BeginTransaction("Instruccion")
+
+                command.Connection = connection
+                command.Transaction = transaction
+
+                Dim lnrRegistro As String = String.Empty
+
+                Dim rs As New List(Of String)
+                Try
+                    'Ejecutando cada instruccion y almacenando el resultado para devolver
+                    For Each ln In InstruccionesSQL
+                        rs.Add(command.CommandText = ln)
+
+                        'Almacenando para el registro
+                        lnrRegistro &= ln & vbNewLine
+
+                        'Ejecucion
+                        If Tipo = TipoInstruccion.NonQuery Then
+                            command.ExecuteNonQuery()
+
+                        ElseIf Tipo = TipoInstruccion.ExecuteScalar Then
+                            command.ExecuteScalar()
+
+                        End If
+
+                    Next
+
+                    'Realizando un commit de todas las intrucciones y devolviendo resultados
+                    transaction.Commit()
+                    RegistroTransaccion(ty, lnrRegistro, TipoResultado.Correcto)
+                    Return rs.ToArray
+
+                    'Cerrar la conexion
+                    If CerrarConexion = True Then
+                        connection.Close()
+                    End If
+
+                Catch ex As Exception
+                    Dim err As String = "Falla durante el proceso de de ejecucion"
+
+                    'Realizando rollback para deshacer cambios
+                    Try
+                        transaction.Rollback()
+
+                    Catch ex1 As Exception
+                        RegistroTransaccion(ty, lnrRegistro, TipoResultado.Incorrecto)
+                        Throw New ExcepcionInfo(err & " y proceso rollback", Clase, fn, ex)
+                        Return Nothing
+
+                    End Try
+
+                    RegistroTransaccion(ty, lnrRegistro, TipoResultado.Incorrecto)
+                    Throw New ExcepcionInfo(err & " y proceso rollback", Clase, fn, ex)
+                    Return Nothing
+
+                End Try
+
+            End Using
 
         End Function
 
