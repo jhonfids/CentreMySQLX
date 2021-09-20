@@ -183,10 +183,7 @@ Namespace Conexion
 
         End Function
 
-        Public Function InstruccionConTransaccion(InstruccionesSQL As List(Of String),
-                                                                        Optional Tipo As TipoInstruccion = TipoInstruccion.NonQuery,
-                                                                        Optional CerrarConexion As Boolean = True) As String()
-
+        Public Sub InstruccionConTransaccion(InstruccionesSQL As List(Of String))
             Const fn As String = "InstrucciónWithTransaccion"
             Const ty As TipoFuncion = TipoFuncion.Instruccion
 
@@ -195,45 +192,28 @@ Namespace Conexion
                 connection.Open()
 
                 Dim command As MySqlCommand = connection.CreateCommand()
-
                 Dim transaction As MySqlTransaction
-                'transaction = connection.BeginTransaction("Instruccion")
-                transaction = connection.BeginTransaction(IsolationLevel.Serializable)
 
+                'transaction = connection.BeginTransaction("Instruccion")
+                transaction = connection.BeginTransaction()
                 command.Connection = connection
                 command.Transaction = transaction
 
-                Dim lnrRegistro As String = String.Empty
-
-                Dim rs As New List(Of String)
+                Dim lntr As String = String.Empty
                 Try
                     'Ejecutando cada instruccion y almacenando el resultado para devolver
                     For Each ln In InstruccionesSQL
-                        rs.Add(command.CommandText = ln)
-
-                        'Almacenando para el registro
-                        lnrRegistro &= ln & vbNewLine
-
-                        'Ejecucion
-                        If Tipo = TipoInstruccion.NonQuery Then
-                            command.ExecuteNonQuery()
-
-                        ElseIf Tipo = TipoInstruccion.ExecuteScalar Then
-                            command.ExecuteScalar()
-
-                        End If
+                        command.CommandText = ln
+                        command.ExecuteNonQuery()
+                        lntr &= ln & vbNewLine
 
                     Next
 
-                    'Realizando un commit de todas las intrucciones y devolviendo resultados
+                    'Realizando un commit de todas las intrucciones y cerrando conexion
                     transaction.Commit()
-                    RegistroTransaccion(ty, lnrRegistro, TipoResultado.Correcto)
-                    Return rs.ToArray
+                    connection.Close()
 
-                    'Cerrar la conexion
-                    If CerrarConexion = True Then
-                        connection.Close()
-                    End If
+                    RegistroTransaccion(ty, lntr, TipoResultado.Correcto)
 
                 Catch ex As Exception
                     Dim err As String = "Falla durante el proceso de de ejecucion"
@@ -243,21 +223,19 @@ Namespace Conexion
                         transaction.Rollback()
 
                     Catch ex1 As Exception
-                        RegistroTransaccion(ty, lnrRegistro, TipoResultado.Incorrecto)
+                        RegistroTransaccion(ty, lntr, TipoResultado.Incorrecto)
                         Throw New ExcepcionInfo(err & " y proceso rollback", Clase, fn, ex)
-                        Return Nothing
 
                     End Try
 
-                    RegistroTransaccion(ty, lnrRegistro, TipoResultado.Incorrecto)
+                    RegistroTransaccion(ty, lntr, TipoResultado.Incorrecto)
                     Throw New ExcepcionInfo(err & " y proceso rollback", Clase, fn, ex)
-                    Return Nothing
 
                 End Try
 
             End Using
 
-        End Function
+        End Sub
 
         Public Function Instruccion(ByVal InstruccionMySQL As String,
                                     Optional ByVal Tipo As TipoInstruccion = TipoInstruccion.NonQuery,
