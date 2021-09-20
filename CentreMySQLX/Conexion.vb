@@ -186,6 +186,7 @@ Namespace Conexion
         Public Function InstruccionConTransaccion(InstruccionesSQL As List(Of String),
                                                                         Optional Tipo As TipoInstruccion = TipoInstruccion.NonQuery,
                                                                         Optional CerrarConexion As Boolean = True) As String()
+
             Const fn As String = "InstrucciónWithTransaccion"
             Const ty As TipoFuncion = TipoFuncion.Instruccion
 
@@ -196,7 +197,8 @@ Namespace Conexion
                 Dim command As MySqlCommand = connection.CreateCommand()
 
                 Dim transaction As MySqlTransaction
-                transaction = connection.BeginTransaction("Instruccion")
+                'transaction = connection.BeginTransaction("Instruccion")
+                transaction = connection.BeginTransaction(IsolationLevel.Serializable)
 
                 command.Connection = connection
                 command.Transaction = transaction
